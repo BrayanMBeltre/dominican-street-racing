@@ -1,0 +1,37 @@
+<div
+    id="canvas"
+    class="w-full max-w-[400px] h-[400px] lg:w-[500px] lg:h-[500px]"
+>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/p5@1.9.1/lib/p5.js"></script>
+
+<script>
+    const canvas = document.getElementById("canvas")!;
+
+    const sketch = (p: p5) => {
+        p.setup = () => {
+            p.background(canvas.style.backgroundColor);
+            p.createCanvas(canvas.clientWidth, canvas.clientHeight);
+        };
+
+        p.draw = () => {
+            if (p.mouseIsPressed) {
+                p.fill(0);
+            } else {
+                p.fill(255);
+            }
+
+            p.ellipse(p.mouseX, p.mouseY, 80, 80);
+        };
+
+        p.windowResized = () => {
+            p.resizeCanvas(p.windowWidth, p.windowHeight);
+            p.resizeCanvas(canvas.clientWidth, canvas.clientHeight);
+        };
+    };
+
+    window.addEventListener("DOMContentLoaded", () => {
+        new p5(sketch, canvas);
+    });
+</script>
