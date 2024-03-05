@@ -1,32 +1,78 @@
-<div
-    id="canvas"
-    class="w-full max-w-[400px] h-[400px] lg:w-[500px] lg:h-[500px]"
->
-</div>
+<div id="canvas" class="w-screen h-[100svh] max-w-[400px] max-h-[700px]"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/p5@1.9.1/lib/p5.js"></script>
 
 <script>
     const canvas = document.getElementById("canvas")!;
+    import { Player } from "@/game/player";
+    import { Opponent } from "@/game/opponent";
 
     const sketch = (p: p5) => {
+        // Images
+        let redCardImage: p5.Image;
+        let greenCardImage: p5.Image;
+
+        let player: Player;
+        let oppoents: Array<Opponent> = [];
+
+        p.preload = () => {
+            redCardImage = p.loadImage("/assets/Car_Red.png");
+            greenCardImage = p.loadImage("/assets/Car_Green.png");
+        };
+
         p.setup = () => {
-            p.background(canvas.style.backgroundColor);
             p.createCanvas(canvas.clientWidth, canvas.clientHeight);
+
+            player = new Player({
+                x: p.width / 2,
+                y: p.height - 200,
+                image: greenCardImage,
+            });
+
+            oppoents.push(
+                new Opponent({
+                    image: redCardImage,
+                    x: p.width / 2,
+                    y: p.height + 500,
+                }),
+            );
+
+            oppoents.push(
+                new Opponent({
+                    image: redCardImage,
+                    x: p.width / 2,
+                    y: p.height + 1000,
+                }),
+            );
         };
 
         p.draw = () => {
-            if (p.mouseIsPressed) {
-                p.fill(0);
-            } else {
-                p.fill(255);
+            p.background(0);
+
+            player.draw(p);
+
+            for (let i = 0; i < oppoents.length; i++) {
+                oppoents[i].draw(p);
+
+                // remove the opponent if it's off the screen
+                if (oppoents[i].state.y < oppoents[i].state.height! * -1) {
+                    oppoents.splice(i, 1);
+                    i--; // Decrement the loop counter to prevent skipping the next opponent
+                }
             }
 
-            p.ellipse(p.mouseX, p.mouseY, 80, 80);
+            if (p.frameCount % 60 === 0) {
+                oppoents.push(
+                    new Opponent({
+                        image: redCardImage,
+                        x: p.random(p.width),
+                        y: p.height + 500,
+                    }),
+                );
+            }
         };
 
         p.windowResized = () => {
-            p.resizeCanvas(p.windowWidth, p.windowHeight);
             p.resizeCanvas(canvas.clientWidth, canvas.clientHeight);
         };
     };
