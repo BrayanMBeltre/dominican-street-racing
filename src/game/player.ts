@@ -2,14 +2,14 @@
 type InitialState = {
     x: number;
     y: number;
-    width?: number;
-    height?: number;
+    width: number;
+    height: number;
     image: p5.Image;
-    speed?: number;
+    speed: number;
 };
 
 export class Player {
-    constructor(private state: InitialState) {
+    constructor(public state: InitialState) {
         this.state = {
             ...state,
             speed: 5,
@@ -21,8 +21,8 @@ export class Player {
     draw(p: p5) {
         const { image, width, height, x, y, speed } = this.state;
 
-        image?.resize(width!, height!);
-        p.image(image!, x, y);
+        image?.resize(width, height);
+        p.image(image, x, y);
 
         const touchingLeftEdge = p.mouseX < p.width / 2;
         const touchingRightEdge = p.mouseX > p.width / 2;
@@ -31,21 +31,31 @@ export class Player {
         const movingRight = p.keyIsDown(p.RIGHT_ARROW) || (touchingRightEdge && p.mouseIsPressed);
         const movingUp = p.keyIsDown(p.UP_ARROW) || p.keyIsDown(87);
         const movingDown = p.keyIsDown(p.DOWN_ARROW) || p.keyIsDown(83);
+        const canMoveUp = y > 0;
+        const canMoveDown = y < p.height - height;
+        const canMoveLeft = x > 0;
+        const canMoveRight = x < p.width - width;
 
-        if (movingLeft) {
-            this.state.x -= speed!;
+        if (movingLeft && canMoveLeft) {
+            this.state.x -= speed;
         }
 
-        if (movingRight) {
-            this.state.x += speed!;
+        if (movingRight && canMoveRight) {
+            this.state.x += speed;
         }
 
-        if (movingUp) {
-            this.state.y -= speed!;
+        if (movingUp && canMoveUp) {
+            this.state.y -= speed;
         }
 
-        if (movingDown) {
-            this.state.y += speed!;
+        if (movingDown && canMoveDown) {
+            this.state.y += speed;
         }
+
+
+
+
     }
+
+
 }

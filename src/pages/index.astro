@@ -22,6 +22,15 @@ import Sketch from "@/components/sketch.astro";
 
 			<div class="relative group h-full">
 				<span
+					class="absolute right-10 top-10 font font-bold text-red-500"
+					id="life-bar">Life: 0</span
+				>
+				<div
+					class="absolute left-10 top-10 font font-bold text-red-500"
+				>
+					Life: <span id="fps-counter"> 0</span>
+				</div>
+				<span
 					class="absolute top-1/2 w-full text-2xl text-center group-hover:opacity-0 transition-opacity text-[#f47a9e]"
 					>Hover me</span
 				>
