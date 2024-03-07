@@ -10,7 +10,8 @@ type InitialState = {
 
 };
 
-export class Opponent {
+export class Police {
+
     constructor(public state: InitialState) {
         this.state = {
             ...state,
@@ -23,10 +24,12 @@ export class Opponent {
     draw(p: p5) {
         const { image, width, height, x, y, speed } = this.state;
 
+        p.push();
         image?.resize(width, height);
         p.image(image, x, y);
+        p.pop();
 
-        this.state.y -= speed;
+        this.state.y += speed;
     }
 
     collidedWithPlayer(player: Player) {
@@ -34,7 +37,6 @@ export class Opponent {
         const playerY = player.state.y;
         const playerWidth = player.state.width;
         const playerHeight = player.state.height;
-
 
         if (
             this.state.x < playerX + playerWidth &&
@@ -51,5 +53,6 @@ export class Opponent {
     isOffScreen() {
         return this.state.y < -this.state.height;
     }
+
 
 }

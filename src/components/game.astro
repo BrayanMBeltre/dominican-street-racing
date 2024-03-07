@@ -1,46 +1,187 @@
+---
+import { Image } from "astro:assets";
+import heartImage from "~/public/assets/heart.png";
+import warningImage from "~/public/assets/warning.svg";
+---
+
 <div
-    id="canvas"
-    class="w-screen h-full max-w-[768px]"
     draggable="false"
     oncontextmenu="return false"
     onselectstart="return false"
     ondragstart="return false"
+    class="w-screen h-full max-w-[768px]"
 >
+    <div class="absolute w-full h-full">
+        <div
+            id="startScreen"
+            class="flex w-full h-full bg-[#00c0f0] flex-col items-center justify-center"
+        >
+            <h1 class="text-4xl">Car Game</h1>
+
+            <button id="playButton" class="mt-16 underline"> Play</button>
+        </div>
+
+        <div
+            id="gameOverScreen"
+            class="hidden w-full h-full bg-[#00c0f0] flex-col items-center justify-center"
+        >
+            <h1 class="text-4xl">Game Over</h1>
+
+            <h2 class="text-2xl mt-16">
+                Score: <span class="HUDScore"></span>
+            </h2>
+
+            <button class="playAgainButton mt-16 underline"> Play Again</button>
+        </div>
+
+        <div
+            id="pauseScreen"
+            class="hidden w-full h-full bg-[#00c0f0] flex-col items-center justify-center"
+        >
+            <h1 class="text-4xl">Paused</h1>
+
+            <button id="muteButton" class="mt-16 underline">Mute</button>
+            <button class="playAgainButton mt-16 underline">Restart</button>
+            <button id="resumeButton" class="mt-16 underline">Resume</button>
+        </div>
+
+        <div id="HUD" class="flex p-2 top-5 left-5 justify-between">
+            <div>
+                <button id="menuButton">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-10 w-10"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M4 6h16M4 12h16m-7 6h7"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="flex items-center justify-start gap-2">
+                <div
+                    class="pixel-corners bg-white text-black flex items-center justify-center px-4 py-3 gap-2"
+                >
+                    <Image src={warningImage} alt={"Infractions"} />
+
+                    <span id="HUDInfractions">3</span>
+                </div>
+
+                <div
+                    class="pixel-corners bg-white text-black flex items-center justify-center px-4 py-3 gap-2"
+                >
+                    <span class="HUDScore">3</span>
+
+                    <span>KM</span>
+                </div>
+
+                <div
+                    class="pixel-corners bg-white text-black flex items-center justify-center px-4 py-3 gap-2"
+                >
+                    <Image src={heartImage} alt={"Hud background"} />
+
+                    <span id="HUDLives">3</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="canvas" class="h-full w-full"></div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/p5@1.9.1/lib/p5.js"></script>
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.1/p5.min.js"
+    integrity="sha512-jLPBEs8Tcpbj4AlLISWG0l7MbuIqp1cFBilrsy0BhvNUa0BLB4wVQeoL+93OYOdENFPKLOgrzb1Nytn+5N5y7g=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"></script>
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.1/addons/p5.sound.min.js"
+    integrity="sha512-WzkwpdWEMAY/W8WvP9KS2/VI6zkgejR4/KTxTl4qHx0utqeyVE0JY+S1DlMuxDChC7x0oXtk/ESji6a0lP/Tdg=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"></script>
 
 <script>
-    const canvas = document.getElementById("canvas")!;
-    const lifeBar = document.getElementById("life-bar")!;
-    const fpsCounter = document.getElementById("fps-counter")!;
-
     import { Player } from "@/game/player";
     import { Opponent } from "@/game/opponent";
     import { RoadSegment } from "@/game/roadSegment";
+    import { Particle } from "@/game/particle";
+    // import { Particle } from "@/game/particle";
+
+    const canvas = document.getElementById("canvas")!;
+
+    const startScreen = document.getElementById("startScreen")!;
+    const pauseScreen = document.getElementById("pauseScreen")!;
+    const gameoverScreen = document.getElementById("gameOverScreen")!;
+    const HUD = document.getElementById("HUD")!;
+
+    const HUDInfractions = document.getElementById("HUDInfractions")!;
+    const HUDScore = document.getElementsByClassName("HUDScore")!;
+    const HUDLives = document.getElementById("HUDLives")!;
+
+    const menuButton = document.getElementById("menuButton")!;
+    const playButton = document.getElementById("playButton")!;
+    const playAgainButton = document.getElementsByClassName("playAgainButton")!;
+    const muteButton = document.getElementById("muteButton")!;
+    const resumeButton = document.getElementById("resumeButton")!;
+
+    const backgroundMusic = new Audio("/assets/backgroundMusic.mp3");
+    backgroundMusic.loop = true;
+
+    let redCardImage: p5.Image;
+    let greenCardImage: p5.Image;
+    let purpleCardImage: p5.Image;
+    let explosionImage: p5.Image;
+    let warningImage: p5.Image;
+    let policeImage: p5.Image;
+
+    // Sounds
+    let carCrashSound: p5.SoundFile;
+    let whistleSound: p5.SoundFile;
+
+    let player: Player;
+    let playerCarWidth = 50;
+    let playerCarHeight = 100;
+    let oppoents: Array<Opponent> = [];
+    let polices: Array<Opponent> = [];
+
+    let lives: number = 3;
+    let score: number = 0;
+    let infractions: number = 0;
+
+    // Road
+    let roadColor = "#242526";
+    let roadSegments: Array<RoadSegment> = [];
+    let laneWidth = playerCarWidth * 2;
+
+    let particles: Array<Particle> = [];
+
+    let isMuted = localStorage.getItem("isMuted") === "true" ? true : false;
+    muteButton.innerText = isMuted ? "Unmute" : "Mute";
+
+    const showPage = (page: HTMLElement) => {
+        page.classList.replace("hidden", "flex");
+    };
+
+    const hidePage = (page: HTMLElement) => {
+        page.classList.replace("flex", "hidden");
+    };
 
     const sketch = (p: p5) => {
-        // Images
-        let redCardImage: p5.Image;
-        let greenCardImage: p5.Image;
-        let purpleCardImage: p5.Image;
-
-        let player: Player;
-        let playerCarWidth = 50;
-        let playerCarHeight = 100;
-        let oppoents: Array<Opponent> = [];
-        let life = 40;
-        let isGameOver = false;
-
-        // Road
-        let roadColor = "#242526";
-        let roadSegments: Array<RoadSegment> = [];
-        let laneWidth = playerCarWidth * 2;
-
         p.preload = () => {
-            redCardImage = p.loadImage("/assets/Car_Red.png");
-            greenCardImage = p.loadImage("/assets/Car_Green.png");
-            purpleCardImage = p.loadImage("/assets/Car_Purple.png");
+            redCardImage = p.loadImage("/assets/carRed.png");
+            purpleCardImage = p.loadImage("/assets/carBlue.png");
+            explosionImage = p.loadImage("/assets/explosion.gif");
+            warningImage = p.loadImage("/assets/warning.png");
+            policeImage = p.loadImage("/assets/police.png");
+
+            carCrashSound = p.loadSound("/assets/carCrashSound.mp3");
+            whistleSound = p.loadSound("/assets/whistleSound.wav");
         };
 
         p.setup = () => {
@@ -48,8 +189,6 @@
 
             // check how many lanes we can fit given the width of the cars and the width of the canvas
             const roadRows = canvas.clientHeight / 250 + 1;
-
-            console.log({ roadRows });
 
             for (let row = 0; row < roadRows; row++) {
                 roadSegments.push(
@@ -60,6 +199,8 @@
                     }),
                 );
             }
+
+            greenCardImage = p.loadImage("/assets/carGreen.png");
 
             player = new Player({
                 x: p.width / 2,
@@ -74,11 +215,27 @@
         p.draw = () => {
             p.background(roadColor);
 
-            // UI
-            fpsCounter.textContent = `FPS: ${p.frameRate().toFixed(2)}`;
-            lifeBar.textContent = `Life: ${life}`;
+            // HUD
+            HUDLives.innerText = lives.toString();
+            // HUDScore.innerText = score.toString();
 
-            console.log({ roadSegments });
+            for (let s of HUDScore) {
+                s.innerHTML = score.toString();
+            }
+
+            HUDInfractions.innerText = infractions.toString();
+
+            // if (isPaused || isGameOver) {
+            //     p.noLoop();
+            //     backgroundMusic.pause();
+            // }
+
+            if (lives <= 0 || infractions >= 3) {
+                showPage(gameoverScreen);
+
+                p.noLoop();
+                backgroundMusic.pause();
+            }
 
             // Draw the road segments
             for (const segment of roadSegments) {
@@ -92,17 +249,22 @@
                 roadSegments.unshift(lastSegment);
             }
 
-            // if (life <= 0) {
-            //     // isGameOver = true;
-            //     alert("Game Over");
-            //     return;
-            // }
+            for (let particle of particles) {
+                particle.draw(p);
+            }
+
+            particles = particles.filter((particle) => !particle.isDone());
 
             // draw the player
             player.draw(p);
 
             // draw the opponents
             for (let opponent of oppoents) {
+                // draw a warning if the opponent is about to go off screen
+                if (opponent.state.y > p.height) {
+                    p.image(warningImage, opponent.state.x + 25, p.height - 50);
+                }
+
                 opponent.draw(p);
             }
 
@@ -113,7 +275,69 @@
                 }
 
                 if (oppoent.collidedWithPlayer(player)) {
-                    life -= 10;
+                    lives -= 1;
+
+                    particles.push(
+                        new Particle({
+                            x: oppoent.state.x,
+                            y: oppoent.state.y,
+                            image: explosionImage,
+                            duration: 30,
+                        }),
+                    );
+
+                    !isMuted &&
+                        carCrashSound.isLoaded() &&
+                        carCrashSound.play();
+
+                    return false;
+                }
+
+                return true;
+            });
+
+            // draw the polices
+            for (let police of polices) {
+                police.draw(p);
+            }
+
+            // police logic
+            polices = polices.filter((police) => {
+                if (police.isOffScreen()) {
+                    return false;
+                }
+
+                if (police.collidedWithPlayer(player)) {
+                    infractions += 1;
+
+                    particles.push(
+                        new Particle({
+                            x: police.state.x,
+                            y: police.state.y,
+                            image: explosionImage,
+                            duration: 30,
+                        }),
+                    );
+
+                    !isMuted && whistleSound.isLoaded() && whistleSound.play();
+
+                    return false;
+                }
+
+                if (
+                    oppoents.some((opponent) =>
+                        opponent.collidedWithPlayer(police),
+                    )
+                ) {
+                    particles.push(
+                        new Particle({
+                            x: police.state.x,
+                            y: police.state.y,
+                            image: explosionImage,
+                            duration: 30,
+                        }),
+                    );
+
                     return false;
                 }
 
@@ -122,6 +346,8 @@
 
             // add more opponents every second
             if (p.frameCount % 60 === 0) {
+                score += 1;
+
                 const lane = roadSegments[0].getRandomLane(p);
 
                 oppoents.push(
@@ -132,6 +358,19 @@
                         height: 100,
                         width: 50,
                         speed: 5,
+                        from: "bottom",
+                    }),
+                );
+
+                polices.push(
+                    new Opponent({
+                        image: policeImage,
+                        x: lane + 20,
+                        y: -20,
+                        height: 39,
+                        width: 71,
+                        speed: 5,
+                        from: "top",
                     }),
                 );
             }
@@ -141,11 +380,63 @@
             p.resizeCanvas(canvas.clientWidth, canvas.clientHeight);
 
             // rerun the setup function to recalculate the lanes
+            roadSegments = [];
             p.setup();
         };
     };
 
+    const onMenuButtonClick = (p: p5) => {
+        showPage(pauseScreen);
+        hidePage(HUD);
+
+        backgroundMusic.pause();
+        p.noLoop();
+    };
+
+    const startGame = (p: p5) => {
+        hidePage(startScreen);
+        showPage(HUD);
+
+        !isMuted && backgroundMusic.play();
+        p.loop();
+    };
+
+    const restartGame = (p: p5) => {
+        hidePage(pauseScreen);
+        hidePage(gameoverScreen);
+        showPage(HUD);
+
+        lives = 3;
+        score = 0;
+        infractions = 0;
+
+        !isMuted && backgroundMusic.play();
+        p.loop();
+    };
+
+    const toggleMute = () => {
+        isMuted = !isMuted;
+        muteButton.innerText = isMuted ? "Unmute" : "Mute";
+        localStorage.setItem("isMuted", isMuted.toString());
+    };
+
+    const resumeGame = (p: p5) => {
+        hidePage(pauseScreen);
+        showPage(HUD);
+
+        !isMuted && backgroundMusic.play();
+        p.loop();
+    };
+
     window.addEventListener("DOMContentLoaded", () => {
-        new p5(sketch, canvas);
+        const p = new p5(sketch, canvas);
+
+        menuButton.addEventListener("click", () => onMenuButtonClick(p));
+        playButton.addEventListener("click", () => startGame(p));
+        resumeButton.addEventListener("click", () => resumeGame(p));
+        muteButton.addEventListener("click", toggleMute);
+        for (let button of playAgainButton) {
+            button.addEventListener("click", () => restartGame(p));
+        }
     });
 </script>
