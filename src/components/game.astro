@@ -15,8 +15,6 @@
     const lifeBar = document.getElementById("life-bar")!;
     const fpsCounter = document.getElementById("fps-counter")!;
 
-    // lifeBar.textContent = "Life: 100";
-
     import { Player } from "@/game/player";
     import { Opponent } from "@/game/opponent";
     import { RoadSegment } from "@/game/roadSegment";
@@ -25,6 +23,7 @@
         // Images
         let redCardImage: p5.Image;
         let greenCardImage: p5.Image;
+        let purpleCardImage: p5.Image;
 
         let player: Player;
         let playerCarWidth = 50;
@@ -36,14 +35,12 @@
         // Road
         let roadColor = "#242526";
         let roadSegments: Array<RoadSegment> = [];
-        let lanes: number;
-        let roadSegmentSpeed = 5;
-        let laneWidth: number;
-        let roadEdge: number;
+        let laneWidth = playerCarWidth * 2;
 
         p.preload = () => {
             redCardImage = p.loadImage("/assets/Car_Red.png");
             greenCardImage = p.loadImage("/assets/Car_Green.png");
+            purpleCardImage = p.loadImage("/assets/Car_Purple.png");
         };
 
         p.setup = () => {
@@ -51,22 +48,16 @@
 
             // TODO: Move this to the segment class
             // check how many lanes we can fit given the width of the cars and the width of the canvas
-            laneWidth = playerCarWidth * 2;
-            lanes = Math.round(canvas.clientWidth / laneWidth);
-            // leave the same amount of space on the left and right of the road
-            roadEdge = (canvas.clientWidth - lanes * laneWidth) / 2;
+            const roadRows = canvas.clientHeight / 250;
 
-
-           for(let row = 0; row < 10; row++) {
-                for (let lane = 0; lane < lanes; lane++) {
-                    roadSegments.push(
-                        new RoadSegment({
-                            x: lane * laneWidth + roadEdge,
-                            y: (row * 250) - p.height,
-                            speed: laneWidth,
-                        }),
-                    );
-                }
+            for (let row = 0; row < roadRows; row++) {
+                roadSegments.push(
+                    new RoadSegment({
+                        y: row * 250,
+                        laneWidth: laneWidth,
+                        speed: 5,
+                    }),
+                );
             }
 
             player = new Player({
@@ -80,34 +71,29 @@
         };
 
         p.draw = () => {
-            console.log(roadSegments)
-            fpsCounter.textContent = `FPS: ${p.frameRate().toFixed(2)}`;
             p.background(roadColor);
 
-            // Road
+            // UI
+            fpsCounter.textContent = `FPS: ${p.frameRate().toFixed(2)}`;
+            lifeBar.textContent = `Life: ${life}`;
+
+            // Draw the road segments
             for (const segment of roadSegments) {
                 segment.draw(p);
             }
 
-            roadSegments= roadSegments.filter((segment) => !segment.isOffScreen(p));
-
-            // for (let i = 0; i < roads.length; i++) {
-            //     roads[i].draw(p);
-
-            //     if (roads[i].isOffScreen()) {
-            //         roads.splice(i, 1);
-            //         i--; // Decrement the loop counter to prevent skipping the next opponent
-            //         if (i < 0) break;
-            //     }
-            // }
+            // move the last segment to the front
+            if (roadSegments[roadSegments.length - 1].isOffScreen(p)) {
+                let lastSegment = roadSegments.pop()!;
+                lastSegment.state.y = -250;
+                roadSegments.unshift(lastSegment);
+            }
 
             // if (life <= 0) {
             //     // isGameOver = true;
             //     alert("Game Over");
             //     return;
             // }
-
-            lifeBar.textContent = `Life: ${life}`;
 
             player.draw(p);
 
@@ -128,40 +114,19 @@
                 return true;
             });
 
-            // if (oppoents[0].state.y > 0) {
-            //     oppoents.unshift(
-            //         new Opponent({
-            //             image: redCardImage,
-            //             x: p.random(p.width),
-            //             y: -500,
-            //             height: 100,
-            //             width: 50,
-            //             speed: 5,
-            //         }),
-            //     );
-            // }
-
             if (p.frameCount % 60 === 0) {
+                const lane = roadSegments[0].getRandomLane(p);
+
                 oppoents.push(
                     new Opponent({
-                        image: redCardImage,
-                        x: p.random(p.width),
+                        image: p.random([redCardImage, purpleCardImage]),
+                        x: lane + 25,
                         y: p.height + 500,
                         height: 100,
                         width: 50,
                         speed: 5,
                     }),
                 );
-
-                for (let i = 0; i < lanes; i++) {
-                    roadSegments.push(
-                        new RoadSegment({
-                            x: i * laneWidth + roadEdge,
-                            y: -p.height,
-                            speed: roadSegmentSpeed,
-                        }),
-                    );
-                }
             }
         };
 

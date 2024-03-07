@@ -35,6 +35,7 @@ export class Opponent {
         const playerWidth = player.state.width;
         const playerHeight = player.state.height;
 
+
         if (
             this.state.x < playerX + playerWidth &&
             this.state.x + this.state.width > playerX &&
