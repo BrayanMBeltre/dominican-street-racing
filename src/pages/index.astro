@@ -1,8 +1,11 @@
 ---
-import "../../node_modules/@fontsource/press-start-2p/index.css";
+import "@fontsource/press-start-2p";
 import "../globals.css";
 
 import Game from "@/components/game.astro";
+import { Image } from "astro:assets";
+import leftSideRoadImage from "~/public/assets/left_side_road.png";
+import rightSideRoadImage from "~/public/assets/right_side_road.png";
 ---
 
 <html lang="en">
@@ -14,18 +17,24 @@ import Game from "@/components/game.astro";
 		<title>Astro</title>
 	</head>
 
-	<body class="bg-gray-900 text-white">
+	<body class="bg-[#00c0f0] text-white">
 		<div
 			class="flex flex-col items-center justify-center min-h-screen h-[100svh]"
 		>
 			<div
-				class="relative group h-full"
+				class="relative group h-full flex items-center"
 				draggable="false"
 				oncontextmenu="return false"
 				onselectstart="return false"
 				ondragstart="return false"
 			>
+				<div class="z-10bg-black w-10 h-10"></div>
+				<!-- <Image src={leftSideRoadImage} alt="" class={" "} /> -->
+
 				<Game />
+				<div class="z-10bg-black w-10 h-10"></div>
+
+				<!-- <Image src={rightSideRoadImage} alt="" /> -->
 			</div>
 		</div>
 	</body>
@@ -34,5 +43,9 @@ import Game from "@/components/game.astro";
 <style>
 	* {
 		font-family: "Press Start 2P", monospace;
+	}
+
+	.bg-sea {
+		background: url("/assets/sea_bg.png") no-repeat center center fixed;
 	}
 </style>

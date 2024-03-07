@@ -2,23 +2,35 @@
 import { Image } from "astro:assets";
 import heartImage from "~/public/assets/heart.png";
 import warningImage from "~/public/assets/warning.svg";
+import logoImage from "~/public/assets/logo.png";
+import mapImage from "~/public/assets/rd_map.png";
 ---
 
 <div
+    id="game"
     draggable="false"
     oncontextmenu="return false"
     onselectstart="return false"
     ondragstart="return false"
     class="w-screen h-full max-w-[768px]"
 >
-    <div class="absolute w-full h-full">
+    <div class="absolute w-full h-full overflow-hidden">
         <div
             id="startScreen"
-            class="flex w-full h-full bg-[#00c0f0] flex-col items-center justify-center"
+            class="flex w-full h-full bg-sea flex-col items-center justify-center p-2"
         >
-            <h1 class="text-4xl">Car Game</h1>
+            <Image src={mapImage} alt={"Logo"} class={" scale-[200%] "} />
 
-            <button id="playButton" class="mt-16 underline"> Play</button>
+            <Image src={logoImage} alt={"Logo"} class="mt-16" />
+
+            <button
+                id="playButton"
+                class="mt-16 text-2xl pixel-corners text-[#eacd0e] bg-[#37428f] py-6 px-8"
+            >
+                Play Now
+            </button>
+
+            <p class="absolute bottom-10">@Team5 Game Jam RD 2023</p>
         </div>
 
         <div
@@ -31,14 +43,20 @@ import warningImage from "~/public/assets/warning.svg";
                 Score: <span class="HUDScore"></span>
             </h2>
 
-            <button class="playAgainButton mt-16 underline"> Play Again</button>
+            <button
+                class="playAgainButton text-[#eacd0e] bg-[#37428f] mt-16 underline p-4 py-2"
+            >
+                Play Again
+            </button>
         </div>
 
         <div
             id="pauseScreen"
-            class="hidden w-full h-full bg-[#00c0f0] flex-col items-center justify-center"
+            class="hidden w-full h-full bg-sea flex-col items-center justify-center"
         >
-            <h1 class="text-4xl">Paused</h1>
+            <Image src={logoImage} alt={"Logo"} class="mt-16" />
+
+            <h1 class="text-4xl mt-16">Paused</h1>
 
             <button id="muteButton" class="mt-16 underline">Mute</button>
             <button class="playAgainButton mt-16 underline">Restart</button>
@@ -94,6 +112,12 @@ import warningImage from "~/public/assets/warning.svg";
 
     <div id="canvas" class="h-full w-full"></div>
 </div>
+
+<style>
+    .bg-sea {
+        background: url("/assets/sea_bg.png") no-repeat center center fixed;
+    }
+</style>
 
 <script>
     import { Player } from "@/game/player";
@@ -336,6 +360,8 @@ import warningImage from "~/public/assets/warning.svg";
             });
 
             // add more opponents every second
+            // accelerate the game every 10 seconds
+            const difficulty = Math.floor(score / 10);
             if (p.frameCount % 60 === 0) {
                 score += 1;
 
@@ -430,6 +456,7 @@ import warningImage from "~/public/assets/warning.svg";
     document.head.appendChild(p5Script).onload = () => {
         document.head.appendChild(p5SoundScript).onload = () => {
             const p = new p5(sketch, canvas);
+            p.noLoop();
 
             menuButton.addEventListener("click", () => onMenuButtonClick(p));
             playButton.addEventListener("click", () => startGame(p));
