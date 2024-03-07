@@ -45,7 +45,7 @@ import warningImage from "~/public/assets/warning.svg";
             <button id="resumeButton" class="mt-16 underline">Resume</button>
         </div>
 
-        <div id="HUD" class="flex p-2 top-5 left-5 justify-between">
+        <div id="HUD" class="hidden p-2 top-5 left-5 justify-between">
             <div>
                 <button id="menuButton">
                     <svg
@@ -167,17 +167,19 @@ import warningImage from "~/public/assets/warning.svg";
         page.classList.replace("flex", "hidden");
     };
 
-    const sketch = (p: p5) => {
-        p.preload = () => {
-            redCardImage = p.loadImage("/assets/carRed.png");
-            purpleCardImage = p.loadImage("/assets/carBlue.png");
-            explosionImage = p.loadImage("/assets/explosion.gif");
-            warningImage = p.loadImage("/assets/warning.png");
-            policeImage = p.loadImage("/assets/police.png");
+    const preloadAssets = (p: p5) => {
+        redCardImage = p.loadImage("/assets/carRed.png");
+        purpleCardImage = p.loadImage("/assets/carBlue.png");
+        explosionImage = p.loadImage("/assets/explosion.gif");
+        warningImage = p.loadImage("/assets/warning.png");
+        policeImage = p.loadImage("/assets/police.png");
 
-            carCrashSound = p.loadSound("/assets/carCrashSound.mp3");
-            whistleSound = p.loadSound("/assets/whistleSound.wav");
-        };
+        carCrashSound = p.loadSound("/assets/carCrashSound.mp3");
+        whistleSound = p.loadSound("/assets/whistleSound.wav");
+    };
+
+    const sketch = (p: p5) => {
+        p.preload = () => preloadAssets(p);
 
         p.setup = () => {
             p.createCanvas(canvas.clientWidth, canvas.clientHeight);
