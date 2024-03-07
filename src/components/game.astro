@@ -19,7 +19,7 @@
 
     import { Player } from "@/game/player";
     import { Opponent } from "@/game/opponent";
-    import { RoadSegment } from "@/game/road";
+    import { RoadSegment } from "@/game/roadSegment";
 
     const sketch = (p: p5) => {
         // Images
@@ -35,10 +35,11 @@
 
         // Road
         let roadColor = "#242526";
-        let segments: Array<RoadSegment> = [];
+        let roadSegments: Array<RoadSegment> = [];
         let lanes: number;
-        let segmentSpeed = 5;
+        let roadSegmentSpeed = 5;
         let laneWidth: number;
+        let roadEdge: number;
 
         p.preload = () => {
             redCardImage = p.loadImage("/assets/Car_Red.png");
@@ -53,19 +54,19 @@
             laneWidth = playerCarWidth * 2;
             lanes = Math.round(canvas.clientWidth / laneWidth);
             // leave the same amount of space on the left and right of the road
-            let roadEdge = (canvas.clientWidth - lanes * laneWidth) / 2;
+            roadEdge = (canvas.clientWidth - lanes * laneWidth) / 2;
 
-            console.log(lanes);
 
-            for (let i = 0; i < lanes; i++) {
-                segments.push(
-                    new RoadSegment({
-                        x: i * laneWidth + roadEdge,
-                        // y: -p.height,
-                        y: 200,
-                        speed: segmentSpeed,
-                    }),
-                );
+           for(let row = 0; row < 10; row++) {
+                for (let lane = 0; lane < lanes; lane++) {
+                    roadSegments.push(
+                        new RoadSegment({
+                            x: lane * laneWidth + roadEdge,
+                            y: (row * 250) - p.height,
+                            speed: laneWidth,
+                        }),
+                    );
+                }
             }
 
             player = new Player({
@@ -79,15 +80,16 @@
         };
 
         p.draw = () => {
+            console.log(roadSegments)
             fpsCounter.textContent = `FPS: ${p.frameRate().toFixed(2)}`;
             p.background(roadColor);
 
             // Road
-            for (const segment of segments) {
+            for (const segment of roadSegments) {
                 segment.draw(p);
             }
 
-            // segments = segments.filter((segment) => !segment.isOffScreen(p));
+            roadSegments= roadSegments.filter((segment) => !segment.isOffScreen(p));
 
             // for (let i = 0; i < roads.length; i++) {
             //     roads[i].draw(p);
@@ -151,13 +153,15 @@
                     }),
                 );
 
-                segments.push(
-                    new RoadSegment({
-                        x: p.random(lanes) * laneWidth,
-                        y: -200,
-                        speed: segmentSpeed,
-                    }),
-                );
+                for (let i = 0; i < lanes; i++) {
+                    roadSegments.push(
+                        new RoadSegment({
+                            x: i * laneWidth + roadEdge,
+                            y: -p.height,
+                            speed: roadSegmentSpeed,
+                        }),
+                    );
+                }
             }
         };
 

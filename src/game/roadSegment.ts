@@ -15,7 +15,7 @@ export class RoadSegment {
     draw(p: p5) {
         // draw yellow rectangle
         p.fill(255, 255, 0);
-        p.rect(this.state.x, this.state.y, 5, 100);
+        p.rect(this.state.x, this.state.y, 10, 100);
         this.state.y += this.state.speed;
     }
 
