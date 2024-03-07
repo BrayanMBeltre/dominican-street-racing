@@ -46,9 +46,10 @@
         p.setup = () => {
             p.createCanvas(canvas.clientWidth, canvas.clientHeight);
 
-            // TODO: Move this to the segment class
             // check how many lanes we can fit given the width of the cars and the width of the canvas
-            const roadRows = canvas.clientHeight / 250;
+            const roadRows = canvas.clientHeight / 250 + 1;
+
+            console.log({ roadRows });
 
             for (let row = 0; row < roadRows; row++) {
                 roadSegments.push(
@@ -77,6 +78,8 @@
             fpsCounter.textContent = `FPS: ${p.frameRate().toFixed(2)}`;
             lifeBar.textContent = `Life: ${life}`;
 
+            console.log({ roadSegments });
+
             // Draw the road segments
             for (const segment of roadSegments) {
                 segment.draw(p);
@@ -95,12 +98,15 @@
             //     return;
             // }
 
+            // draw the player
             player.draw(p);
 
+            // draw the opponents
             for (let opponent of oppoents) {
                 opponent.draw(p);
             }
 
+            // opponent logic
             oppoents = oppoents.filter((oppoent) => {
                 if (oppoent.isOffScreen()) {
                     return false;
@@ -114,6 +120,7 @@
                 return true;
             });
 
+            // add more opponents every second
             if (p.frameCount % 60 === 0) {
                 const lane = roadSegments[0].getRandomLane(p);
 
@@ -132,6 +139,7 @@
 
         p.windowResized = () => {
             p.resizeCanvas(canvas.clientWidth, canvas.clientHeight);
+
             // rerun the setup function to recalculate the lanes
             p.setup();
         };
