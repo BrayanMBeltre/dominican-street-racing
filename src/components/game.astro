@@ -95,12 +95,6 @@ import warningImage from "~/public/assets/warning.svg";
     <div id="canvas" class="h-full w-full"></div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.1/p5.min.js"
-></script>
-<script
-    src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.1/addons/p5.sound.min.js"
-></script>
-
 <script>
     import { Player } from "@/game/player";
     import { Opponent } from "@/game/opponent";
@@ -425,15 +419,25 @@ import warningImage from "~/public/assets/warning.svg";
         p.loop();
     };
 
-    window.addEventListener("DOMContentLoaded", () => {
-        const p = new p5(sketch, canvas);
+    let p5Script = document.createElement("script");
+    p5Script.src =
+        "https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.1/p5.min.js";
 
-        menuButton.addEventListener("click", () => onMenuButtonClick(p));
-        playButton.addEventListener("click", () => startGame(p));
-        resumeButton.addEventListener("click", () => resumeGame(p));
-        muteButton.addEventListener("click", toggleMute);
-        for (let button of playAgainButton) {
-            button.addEventListener("click", () => restartGame(p));
-        }
-    });
+    let p5SoundScript = document.createElement("script");
+    p5SoundScript.src =
+        "https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.1/addons/p5.sound.min.js";
+
+    document.head.appendChild(p5Script).onload = () => {
+        document.head.appendChild(p5SoundScript).onload = () => {
+            const p = new p5(sketch, canvas);
+
+            menuButton.addEventListener("click", () => onMenuButtonClick(p));
+            playButton.addEventListener("click", () => startGame(p));
+            resumeButton.addEventListener("click", () => resumeGame(p));
+            muteButton.addEventListener("click", toggleMute);
+            for (let button of playAgainButton) {
+                button.addEventListener("click", () => restartGame(p));
+            }
+        };
+    };
 </script>
