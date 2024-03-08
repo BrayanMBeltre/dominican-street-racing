@@ -44,7 +44,7 @@ import mapImage from "~/public/assets/rd_map.png";
             </h2>
 
             <button
-                class="playAgainButton text-[#eacd0e] bg-[#37428f] mt-16 underline p-4 py-2"
+                class="playAgainButton mt-16 text-2xl pixel-corners text-[#eacd0e] bg-[#37428f] py-6 px-8"
             >
                 Play Again
             </button>
@@ -426,6 +426,8 @@ import mapImage from "~/public/assets/rd_map.png";
         lives = 3;
         score = 0;
         infractions = 0;
+        oppoents = [];
+        polices = [];
 
         !isMuted && backgroundMusic.play();
         p.loop();
